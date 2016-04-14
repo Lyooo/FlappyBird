@@ -84,9 +84,9 @@ int main()
 		// 墙移动移动一格的时间间隔
 		TimeControl wallMoveTime({ 220 });
 		// 鸟上升移动一格的时间间隔
-		TimeControl birdUp({ 40,180 });
+		TimeControl birdUp({ 74,176 });
 		// 鸟下落移动一格的时间间隔
-		TimeControl birdDown({ 180,132,110,100,90,80 });
+		TimeControl birdDown({ 176,74,56,47,47,47 });
 
 		Sleep(1000);
 
