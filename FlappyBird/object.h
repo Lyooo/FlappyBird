@@ -1,10 +1,14 @@
 /************************************************************/
 /* */
+/************************************************************/
 
 #pragma once
 
+#ifndef _OBJECT_
+#define _OBJECT_
+
 #include <utility>
-#include "functions.h"
+#include <Windows.h>
 
 namespace MOVEDIR
 {
@@ -20,67 +24,55 @@ namespace MOVEDIR
 class Object
 {
 public:
-	// 表示一个范围
-	// pair.first为线段的起点，pair.second为线段的终点
+	// 表示一个区间
+	// [pair.first, pair.second]
 	using RangeType = std::pair<SHORT, SHORT>;
 
-	// 表示一个方块的具体位置
-	// pair.first为X的范围，pair.second为Y的范围
-	using ObjectSite = std::pair<RangeType, RangeType>;
+	class ObjectSite
+	{
+	public:
+		ObjectSite() = default;
+		ObjectSite(const RangeType& x, const RangeType&y)
+			: xRange(x), yRange(y){ }
+		ObjectSite(const ObjectSite&) = default;
+		ObjectSite& operator= (const ObjectSite&) = default;
+
+		// 物体所在位置的x区间，闭合区间 -> [a, b]
+		RangeType xRange;
+
+		// 物体所在位置的y区间
+		RangeType yRange;
+	};
 
 	Object() = delete;
 	Object(const ObjectSite& o, char s);
-	Object(ObjectSite&& o, char s);
 	Object(const RangeType& x, const RangeType& y, char s);
-	Object(const Object& other) = default;
-	Object& operator= (const Object& other) = default;
+	Object(const Object&) = default;
+	Object& operator= (const Object&) = default;
 	~Object() = default;
 
-	// 根据方向平移物体一格，并且在屏幕上移动物体
-	void MovedParallel(MOVEDIR::TYPE dir);
+	// 往dir方向移动distance格
+	// x轴方向超出xOutOfRange范围不打印
+	void MovedParallel(
+		MOVEDIR::TYPE dir, SHORT distance = 1,
+		const RangeType& xOutOfRange = { -1, MAXSHORT });
 
-	// 根据方向平移物体一格，并且在屏幕上移动物体
-	// 打印时超出axisRangeX范围不打印
-	void MovedParallel(MOVEDIR::TYPE dir, const RangeType& axisRangeX);
-
-	// 返回X轴方向的范围
 	const RangeType& RangeX() const;
 
-	// 返回y轴方向的范围
 	const RangeType& RangeY() const;
 
-	// 判断两个物体是否相撞
+	const ObjectSite& Site() const;
+
+	char Symbole() const;
+
 	friend bool Collision(
 		const Object& a, const Object& b);
 
-	// 在屏幕上打印物体
-	friend void DrawObjectOnTheScreen(
-		const Object& o);
-
-	// 在屏幕上打印物体，X轴方向超出axisRangeX范围不打印
-	friend void DrawObjectOnTheScreen(
-		const Object& o, const RangeType& axisRangeX);
-
-	// 根据移动后的物体位置以及移动方向，在屏幕上移动物体
-	friend void MovedObjectInTheScreen(
-		const Object& moveAfter, MOVEDIR::TYPE dir);
-
-	// 根据移动后的物体位置以及移动方向，在屏幕上移动物体
-	// X轴方向超出axisRangeX范围不打印
-	friend void MovedObjectInTheScreen(
-		const Object& moveAfter, MOVEDIR::TYPE dir,
-		const RangeType& axisRangeX);
-
 private:
-	// 物体的位置
-	ObjectSite obj;
-	// 物体的符号
+	ObjectSite objSite;
 	char symbol;
 };
 
 bool Collision(const Object& a, const Object& b);
-void DrawObjectOnTheScreen(const Object& o);
-void DrawObjectOnTheScreen(const Object& o, const Object::RangeType& axisRangeX);
-void MovedObjectInTheScreen(const Object& moveAfter, MOVEDIR::TYPE dir);
-void MovedObjectInTheScreen(const Object& moveAfter, MOVEDIR::TYPE dir,
-	const Object::RangeType& axisRangeX);
+
+#endif // !_OBJECT_

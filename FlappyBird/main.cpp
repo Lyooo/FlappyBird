@@ -5,6 +5,7 @@
 
 #include "time_control.h"
 #include "obstacle.h"
+#include "draw.h"
 #include <Windows.h>
 #include <iostream>
 
@@ -20,7 +21,7 @@ void BeginScreen()
 
 void ScoreScreen(const COORD& scoreSite, int score)
 {
-	GotoXY(scoreSite);
+	Draw::GotoXY(scoreSite);
 	std::cout << "SCORE: " << score << "." << std::endl;
 }
 
@@ -57,16 +58,16 @@ int main()
 		Object::RangeType frameY({ 0,15 });
 
 		// 鸟的初始位置
-		Object::ObjectSite birdSite({ 10,10 }, { 7,8 });
+		Object::ObjectSite birdSite({ 10,12 }, { 7,8 });
 		// 鸟的符号
 		char birdSymbol = '&';
 
 		// 墙的宽度
-		SHORT wid = 3;
+		SHORT wid = 5;
 		// 缺口的高度
-		SHORT hig = 4;
+		SHORT hig = 5;
 		// 墙的间距
-		SHORT dis = 7;
+		SHORT dis = 9;
 		// 墙的符号
 		char wallSymbol = '#';
 
@@ -79,14 +80,14 @@ int main()
 		Obstacle obs({ frameX,frameY }, wid, hig, dis, wallSymbol);
 
 		Object bird(birdSite, birdSymbol);
-		DrawObjectOnTheScreen(bird);
+		Draw::DrawObjectOnTheScreen(bird.Site(), bird.Symbole());
 
 		// 墙移动移动一格的时间间隔
-		TimeControl wallMoveTime({ 220 });
+		TimeControl wallMoveTime({ 450 });
 		// 鸟上升移动一格的时间间隔
 		TimeControl birdUp({ 74,176 });
 		// 鸟下落移动一格的时间间隔
-		TimeControl birdDown({ 176,74,56,47,47,47 });
+		TimeControl birdDown({ 200,150,100,100,100,100 });
 
 		Sleep(1000);
 
@@ -153,7 +154,8 @@ int main()
 
 				if (obs.CollisionWithTheWalls(bird, score))
 				{
-					DrawObjectOnTheScreen(bird); // 强调鸟的位置
+					// 强调鸟的位置
+					Draw::DrawObjectOnTheScreen(bird.Site(), bird.Symbole());
 
 					if (DeadScreen(score))
 					{

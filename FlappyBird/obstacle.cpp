@@ -1,4 +1,5 @@
 #include "obstacle.h"
+#include "draw.h"
 
 Obstacle::Obstacle(
 	const std::pair<Object::RangeType, Object::RangeType>& b,
@@ -27,7 +28,7 @@ Obstacle::Obstacle(
 	// 打印边界
 	for (const auto& m : boundaryWalls)
 	{
-		DrawObjectOnTheScreen(m);
+		Draw::DrawObjectOnTheScreen(m.Site(), m.Symbole());
 	}
 
 	// 建造第一个墙
@@ -38,8 +39,8 @@ void Obstacle::MovingAllWall(MOVEDIR::TYPE dir)
 {
 	for (auto& m : walls)
 	{
-		m.first.MovedParallel(dir, { boundary.first.first, boundary.first.second });
-		m.second.MovedParallel(dir, { boundary.first.first, boundary.first.second });
+		m.first.MovedParallel(dir, 2, { boundary.first.first, boundary.first.second });
+		m.second.MovedParallel(dir, 2, { boundary.first.first, boundary.first.second });
 	}
 
 	// 每次移动都检测是否需要生成/删除墙
