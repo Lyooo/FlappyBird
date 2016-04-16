@@ -1,29 +1,39 @@
 #include "obstacle.h"
 #include "draw.h"
+#include <ctime>
 
 Obstacle::Obstacle(
-	const std::pair<Object::RangeType, Object::RangeType>& b,
-	SHORT w, SHORT wgh, SHORT d, char s)
-	: boundary(b), wallWidth(w), wallGapHight(wgh), distance(d), symbol(s),
-	e(static_cast<unsigned>(time(0))),
-	u(b.second.first + 3,
-		b.second.second - (wgh % (b.second.second - b.second.first - 3)) - 2)
-	// u(a,b) 随机生成墙的缺口在Y轴的起点，
-	// （u(a,b) + 缺口高度）就是缺口在Y轴的终点
+	const Object::RangeType& bX, const Object::RangeType& bY,
+	SHORT ww, SHORT wgh, SHORT d, char ws, char bs)
+	: boundaryRangeX(bX), boundaryRangeY(bY), wallWidth(ww),
+	wallGapHight(wgh), distance(d), wallSymbol(ws), boundarySymbol(bs),
+	e(static_cast<unsigned>(time(0))), // 设定随机生成器种子
+	u(
+		bY.first + (bY.second - bY.first) / 8, // 缺口上部分可以最上的y坐标
+		bY.second - (bY.second - bY.first) / 8 - wgh // 缺口上部分可以最下的y坐标
+	)
 {
 	// 上下左右边界
+	boundaryWalls.push_back({ 
+		boundaryRangeX, 
+		{ boundaryRangeY.first, boundaryRangeY.first },
+		boundarySymbol 
+	});
 	boundaryWalls.push_back({
-		{ boundary.first.first, boundary.first.second },
-		{ boundary.second.first, boundary.second.first }, '@' });
+		boundaryRangeX,
+		{ boundaryRangeY.second, boundaryRangeY.second },
+		boundarySymbol
+	});
 	boundaryWalls.push_back({
-		{ boundary.first.first, boundary.first.first },
-		{ boundary.second.first, boundary.second.second }, '@' });
+		{ boundaryRangeX.first, boundaryRangeX.first },
+		boundaryRangeY,
+		boundarySymbol
+	});
 	boundaryWalls.push_back({
-		{ boundary.first.first, boundary.first.second },
-		{ boundary.second.second, boundary.second.second }, '@' });
-	boundaryWalls.push_back({
-		{ boundary.first.second, boundary.first.second },
-		{ boundary.second.first, boundary.second.second }, '@' });
+		{ boundaryRangeX.second, boundaryRangeX.second },
+		boundaryRangeY,
+		boundarySymbol
+	});
 
 	// 打印边界
 	for (const auto& m : boundaryWalls)
@@ -35,17 +45,16 @@ Obstacle::Obstacle(
 	BuildNewWall();
 }
 
-void Obstacle::MovingAllWall(MOVEDIR::TYPE dir)
+void Obstacle::MovingAllWall(MOVEDIR::TYPE dir, SHORT distance)
 {
 	for (auto& m : walls)
 	{
-		m.first.MovedParallel(dir, 2, { boundary.first.first, boundary.first.second });
-		m.second.MovedParallel(dir, 2, { boundary.first.first, boundary.first.second });
+		m.first.MovedParallel(dir, distance, boundaryRangeX);
+		m.second.MovedParallel(dir, distance, boundaryRangeX);
 	}
 
-	// 每次移动都检测是否需要生成/删除墙
 	BuildNewWall();
-	DeleteFirstWall();
+	DeleteUnusefulWall();
 }
 
 bool Obstacle::CollisionWithTheWalls(const Object& obj) const
@@ -71,7 +80,7 @@ bool Obstacle::CollisionWithTheWalls(const Object& obj) const
 	return false;
 }
 
-bool Obstacle::CollisionWithTheWalls(const Object & obj, int & score) const
+bool Obstacle::CollisionWithTheWalls(const Object& obj, int& score) const
 {
 	// 检测是否与墙相撞
 	for (const auto& m : walls)
@@ -101,30 +110,35 @@ bool Obstacle::CollisionWithTheWalls(const Object & obj, int & score) const
 
 void Obstacle::BuildNewWall()
 {
-	if (walls.empty() ||
-		walls.back().first.RangeX().second < boundary.first.second - distance)
+	if (walls.empty() || // 如果没有墙
+		                 // 或与最右边的墙距离足够时建立新墙
+		walls.back().first.RangeX().second < boundaryRangeX.second - distance)
 	{
+		// 缺口y.first
 		auto temp = u(e);
 
 		// 墙的上部分
 		Object upperWall(
-		{ boundary.first.second, boundary.first.second + wallWidth - 1 },
-		{ boundary.second.first + 1, temp - 1 },
-		symbol);
+		{ boundaryRangeX.second, boundaryRangeX.second + wallWidth - 1 },
+		{ boundaryRangeY.first + 1, temp },
+			wallSymbol
+		);
 
 		// 墙的下部分
 		Object bottomWall(
-		{ boundary.first.second, boundary.first.second + wallWidth - 1 },
-		{ temp + wallGapHight, boundary.second.second - 1 },
-		symbol);
+		{ boundaryRangeX.second, boundaryRangeX.second + wallWidth - 1 },
+		{ temp + wallGapHight, boundaryRangeY.second - 1 },
+			wallSymbol
+		);
 
 		walls.push_back({ upperWall, bottomWall });
 	}
 }
 
-void Obstacle::DeleteFirstWall()
+void Obstacle::DeleteUnusefulWall()
 { 
-	if (walls.front().first.RangeX().second < boundary.first.first)
+	// 最左边的墙超出左边界时删除
+	if (walls.front().first.RangeX().second < boundaryRangeX.first)
 	{
 		walls.pop_front();
 	}

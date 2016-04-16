@@ -11,7 +11,6 @@
 
 void BeginScreen()
 {
-	Sleep(500);
 	system("cls");
 	std::cout << "Press \"UP\" To Let Bird Rise." << std::endl
 		<< "Press \"UP\" To Continue." << std::endl;
@@ -27,7 +26,7 @@ void ScoreScreen(const COORD& scoreSite, int score)
 
 bool DeadScreen(int score)
 {
-	Sleep(1000);
+	Sleep(500);
 	system("cls");
 
 	std::cout << "**** YOU DIE! ****" << std::endl
@@ -53,9 +52,9 @@ int main()
 	for (BeginScreen(); ; BeginScreen()) // 游戏大循环
 	{
 		// 边框的X范围
-		Object::RangeType frameX({ 0,29 });
+		Object::RangeType frameX({ 0,35 });
 		// 边框的Y范围
-		Object::RangeType frameY({ 0,15 });
+		Object::RangeType frameY({ 0,25 });
 
 		// 鸟的初始位置
 		Object::ObjectSite birdSite({ 10,12 }, { 7,8 });
@@ -63,31 +62,33 @@ int main()
 		char birdSymbol = '&';
 
 		// 墙的宽度
-		SHORT wid = 5;
+		SHORT wid = 6;
 		// 缺口的高度
-		SHORT hig = 5;
+		SHORT hig = 7;
 		// 墙的间距
-		SHORT dis = 9;
+		SHORT dis = 10;
 		// 墙的符号
 		char wallSymbol = '#';
+		//
+		char boundarySymbol = '%';
 
 		// 分数
 		int score = 0;
 		// 分数位置
-		const COORD scoreSite = { 1,17};
+		const COORD scoreSite = { 1,27};
 		ScoreScreen(scoreSite, score);
 
-		Obstacle obs({ frameX,frameY }, wid, hig, dis, wallSymbol);
+		Obstacle obs(frameX, frameY, wid, hig, dis, wallSymbol, boundarySymbol);
 
 		Object bird(birdSite, birdSymbol);
 		Draw::DrawObjectOnTheScreen(bird.Site(), bird.Symbole());
 
 		// 墙移动移动一格的时间间隔
-		TimeControl wallMoveTime({ 450 });
+		TimeControl wallMoveTime({ 150 });
 		// 鸟上升移动一格的时间间隔
-		TimeControl birdUp({ 74,176 });
+		TimeControl birdUp({ 50, 90, 140 });
 		// 鸟下落移动一格的时间间隔
-		TimeControl birdDown({ 200,150,100,100,100,100 });
+		TimeControl birdDown({ 150,110,90,70,60 });
 
 		Sleep(1000);
 
@@ -150,7 +151,7 @@ int main()
 			// 判断墙是都需要移动
 			if (wallMoveTime.TimeTargetComplete())
 			{
-				obs.MovingAllWall(MOVEDIR::BACKWARD);
+				obs.MovingAllWall(MOVEDIR::BACKWARD, 1);
 
 				if (obs.CollisionWithTheWalls(bird, score))
 				{

@@ -1,10 +1,12 @@
-// 障碍物由墙和边界组成
-// 根据墙的位置自动生成新墙或移除不在画面内的墙
-// 墙的缺口位置随机生成
+/*******************************************************/
+/*         一个Obstacle包含了一系列的墙和4个边界         */
+/******************************************************/
 
 #pragma once
 
-#include "time_control.h"
+#ifndef _OBSTACLE_
+#define _OBSTACLE_
+
 #include "object.h"
 #include <deque>
 #include <vector>
@@ -13,17 +15,23 @@
 class Obstacle
 {
 public:
-	// 一个移动的墙由上下两部分组成
+	// 一个墙可以看成两个Object的集合
 	// pair.first为上部分，pair.second为下部分
 	using WALL = std::pair<Object, Object>;
 
 	Obstacle() = delete;
 	Obstacle(
-		const std::pair<Object::RangeType, Object::RangeType>& b,
-		SHORT w, SHORT wgh, SHORT d, char s = '#');
+		const Object::RangeType& bX, // 设定X轴的边界
+		const Object::RangeType& bY, // 设定Y轴的边界
+		SHORT ww,                    // 设定墙的宽度
+		SHORT wgh,                   // 设定墙上缺口的高度，必须小于bY的一半
+		SHORT d,                     // 设定墙与墙之间的距离
+		char ws,                     // 设定墙的符号
+		char bs                      // 设定边界的符号
+	);
 
-	// 所有墙都左移一格
-	void MovingAllWall(MOVEDIR::TYPE dir);
+	// 所有墙都左移distance格
+	void MovingAllWall(MOVEDIR::TYPE dir, SHORT distance);
 
 	// 检测一个物体obj与所有墙，边界是否有碰撞
 	bool CollisionWithTheWalls(const Object& obj) const;
@@ -33,34 +41,43 @@ public:
 	bool CollisionWithTheWalls(const Object& obj, int& score) const;
 
 private:
-	// 若需要生成新墙，就在在最右侧边界建造一个新墙
+
+	// 需要时生成新墙到walls
 	void BuildNewWall();
 	
-	// 若最左的墙完全超出边界，删除
-	void DeleteFirstWall();
+	// 需要时删除超出边界的墙，（walls.front()）
+	void DeleteUnusefulWall();
 
-	// 墙的集合
+	// 从左往右墙的队列，先进先出
 	std::deque<WALL> walls;
 
-	// 边界的集合
+	// 上下左右边界为4个Object
 	std::vector<Object> boundaryWalls;
 
-	// 边界的X，Y范围
-	std::pair<Object::RangeType, Object::RangeType> boundary;
+	// 边界X的区间 [first, second]
+	Object::RangeType boundaryRangeX;
 
-	// 可移动墙的宽
+	// 边界Y的区间 [first, second]
+	Object::RangeType boundaryRangeY;
+
+	// 墙的宽
 	SHORT wallWidth;
 
-	// 可移动墙的缺口高度
+	// 墙上缺口的高度
 	SHORT wallGapHight;
 
 	// 墙与墙之间的间距
 	SHORT distance;
 
-	// 可移动墙的符号
-	char symbol;
+	// 墙的符号
+	char wallSymbol;
+
+	// 边界的符号
+	char boundarySymbol;
 
 	// 随机生成器，生成墙缺口的位置
 	std::default_random_engine e;
 	std::uniform_int_distribution<SHORT> u;
 };
+
+#endif // !_OBSTACLE_

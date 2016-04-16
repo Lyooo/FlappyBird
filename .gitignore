@@ -6,6 +6,9 @@
 *.user
 *.userosscache
 *.sln.docstates
+*.sln
+*.filters
+*.vcxproj
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
@@ -24,6 +27,8 @@ bld/
 
 # Visual Studio 2015 cache/options directory
 .vs/
+.gitignore
+.gitattributes
 
 # MSTest test Results
 [Tt]est[Rr]esult*/
@@ -210,3 +215,4 @@ FakesAssemblies/
 GeneratedArtifacts/
 _Pvt_Extensions/
 ModelManifest.xml
+/TestProject1

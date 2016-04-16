@@ -1,5 +1,6 @@
 /************************************************************/
-/* */
+/*          一个Object包含两个数据，一位置，二符号            */
+/*             Object可以移动，包括在屏幕上移动               */
 /************************************************************/
 
 #pragma once
@@ -15,7 +16,7 @@ namespace MOVEDIR
 	// pair.first为x轴偏移量， pair.second为y轴的偏移量
 	using TYPE = std::pair<SHORT, SHORT>;
 	
-	// 往某个方向移动一格
+	// 往某个方向移动一格 = x,y值加上各自的偏移量
 	const static TYPE RISE({ 0, -1 });
 	const static TYPE FALL({ 0, 1 });
 	const static TYPE BACKWARD({ -1, 0 });
